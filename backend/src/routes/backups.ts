@@ -16,7 +16,7 @@ backupRoutes.get('/all', (c) => backupController.getAllBackups(c));
 backupRoutes.get('/:backupId/status', (c) => backupController.getBackupStatus(c));
 
 // Restaurer une sauvegarde
-backupRoutes.post('/:backupId/restore', (c) => backupController.restoreBackup(c));
+backupRoutes.get('/:backupId/restore', (c) => backupController.restoreBackup(c));
 
 // Supprimer une sauvegarde
 backupRoutes.delete('/:backupId', (c) => backupController.deleteBackup(c));

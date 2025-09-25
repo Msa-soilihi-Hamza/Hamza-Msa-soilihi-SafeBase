@@ -3,6 +3,8 @@ import { Hono } from 'hono'
 import { connectDatabase } from './config/database.js'
 import { backupRoutes } from './routes/backups.js'
 import { databaseRoutes } from './routes/databases.js'
+import { scheduleRoutes } from './routes/schedules.js'
+import { cronService } from './config/cron.js'
 
 const app = new Hono()
 
@@ -21,6 +23,9 @@ app.route('/api/backups', backupRoutes)
 // Routes pour les bases de données
 app.route('/api/databases', databaseRoutes)
 
+// Routes pour les planifications
+app.route('/api/schedules', scheduleRoutes)
+
 // Route de health check
 app.get('/health', (c) => {
   return c.json({ status: 'healthy', timestamp: new Date().toISOString() })
@@ -35,6 +40,10 @@ async function startServer() {
       console.error('❌ Impossible de se connecter à la base de données')
       process.exit(1)
     }
+
+    // Démarrer les sauvegardes automatiques
+    await cronService.startScheduledBackups()
+    await cronService.startCleanupSchedule()
 
     serve({
       fetch: app.fetch,
