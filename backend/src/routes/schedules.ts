@@ -1,42 +1,26 @@
 import { Hono } from 'hono';
 import { cronService } from '../config/cron.js';
+import { scheduleController } from '../controllers/scheduleController.js';
 
 const scheduleRoutes = new Hono();
 
-// Obtenir le statut des t‚ches programmÈes
-scheduleRoutes.get('/status', (c) => {
-  try {
-    const status = cronService.getTasksStatus();
-    return c.json({
-      success: true,
-      data: status
-    });
-  } catch (error: any) {
-    return c.json({
-      error: 'Erreur lors de la rÈcupÈration du statut',
-      details: error.message
-    }, 500);
-  }
-});
+// Obtenir le statut des planifications
+scheduleRoutes.get('/status', (c) => scheduleController.getScheduleStatus(c));
 
-// DÈclencher une sauvegarde immÈdiate de toutes les bases
-scheduleRoutes.get('/backup-now', async (c) => {
-  try {
-    await cronService.createImmediateBackup();
-    return c.json({
-      success: true,
-      message: 'Sauvegarde immÈdiate dÈclenchÈe pour toutes les bases actives'
-    });
-  } catch (error: any) {
-    return c.json({
-      error: 'Erreur lors de la sauvegarde immÈdiate',
-      details: error.message
-    }, 500);
-  }
-});
+// D√©clencher une sauvegarde imm√©diate
+scheduleRoutes.post('/backup-now', (c) => scheduleController.triggerImmediateBackup(c));
 
-// RedÈmarrer les t‚ches programmÈes
-scheduleRoutes.get('/restart', async (c) => {
+// D√©clencher une sauvegarde planifi√©e
+scheduleRoutes.post('/backup-scheduled', (c) => scheduleController.triggerScheduledBackup(c));
+
+// D√©clencher une sauvegarde automatique
+scheduleRoutes.post('/backup-automatic', (c) => scheduleController.runAutomaticBackup(c));
+
+// D√©clencher le nettoyage
+scheduleRoutes.post('/cleanup', (c) => scheduleController.triggerCleanup(c));
+
+// Red√©marrer les t√¢ches programm√©es (admin)
+scheduleRoutes.post('/restart', async (c) => {
   try {
     cronService.stopAllTasks();
     await cronService.startScheduledBackups();
@@ -44,28 +28,48 @@ scheduleRoutes.get('/restart', async (c) => {
 
     return c.json({
       success: true,
-      message: 'T‚ches programmÈes redÈmarrÈes avec succËs'
+      message: 'T√¢ches programm√©es red√©marr√©es avec succ√®s'
     });
   } catch (error: any) {
     return c.json({
-      error: 'Erreur lors du redÈmarrage des t‚ches',
-      details: error.message
+      success: false,
+      message: 'Erreur lors du red√©marrage des t√¢ches',
+      error: error.message
     }, 500);
   }
 });
 
-// ArrÍter toutes les t‚ches programmÈes
-scheduleRoutes.get('/stop', (c) => {
+// Arr√™ter toutes les t√¢ches programm√©es (admin)
+scheduleRoutes.post('/stop', (c) => {
   try {
     cronService.stopAllTasks();
     return c.json({
       success: true,
-      message: 'Toutes les t‚ches programmÈes ont ÈtÈ arrÍtÈes'
+      message: 'Toutes les t√¢ches programm√©es ont √©t√© arr√™t√©es'
     });
   } catch (error: any) {
     return c.json({
-      error: 'Erreur lors de l\'arrÍt des t‚ches',
-      details: error.message
+      success: false,
+      message: 'Erreur lors de l\'arr√™t des t√¢ches',
+      error: error.message
+    }, 500);
+  }
+});
+
+// Statut des t√¢ches CRON
+scheduleRoutes.get('/cron-status', (c) => {
+  try {
+    const status = cronService.getTasksStatus();
+    return c.json({
+      success: true,
+      message: 'Statut des t√¢ches CRON',
+      data: status
+    });
+  } catch (error: any) {
+    return c.json({
+      success: false,
+      message: 'Erreur lors de la r√©cup√©ration du statut CRON',
+      error: error.message
     }, 500);
   }
 });
