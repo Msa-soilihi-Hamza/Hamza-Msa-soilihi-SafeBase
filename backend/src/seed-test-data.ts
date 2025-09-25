@@ -90,7 +90,7 @@ async function seedTestData() {
       if (existingUser) {
         console.log(`\n📊 **IDs existants :**`);
         console.log(`   User ID: ${existingUser.id}`);
-        existingUser.databases.forEach(db => {
+        existingUser.databases.forEach((db: any) => {
           console.log(`   ${db.type} DB ID: ${db.id} (${db.name})`);
         });
 
