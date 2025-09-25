@@ -1,4 +1,4 @@
-import { PrismaClient } from '../generated/prisma/index.js';
+import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -15,10 +15,10 @@ if (process.env.NODE_ENV !== 'production') {
 export async function connectDatabase() {
   try {
     await prisma.$connect();
-    console.log(' Connexion à MySQL réussie');
+    console.log(' Connexion ï¿½ MySQL rï¿½ussie');
     return true;
   } catch (error) {
-    console.error('L Erreur de connexion à MySQL:', error);
+    console.error('L Erreur de connexion ï¿½ MySQL:', error);
     return false;
   }
 }
@@ -26,8 +26,8 @@ export async function connectDatabase() {
 export async function disconnectDatabase() {
   try {
     await prisma.$disconnect();
-    console.log('= Déconnexion de MySQL réussie');
+    console.log('= Dï¿½connexion de MySQL rï¿½ussie');
   } catch (error) {
-    console.error('L Erreur lors de la déconnexion:', error);
+    console.error('L Erreur lors de la dï¿½connexion:', error);
   }
 }
