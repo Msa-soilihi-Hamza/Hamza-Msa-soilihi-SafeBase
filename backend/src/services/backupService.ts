@@ -107,7 +107,9 @@ export class BackupService {
 
     switch (database.type) {
       case 'MYSQL':
-        command = `mysqldump -h ${database.host} -P ${database.port} -u ${database.username} ${database.password ? `-p${database.password}` : ''} ${database.databaseName} > "${filePath}"`;
+        // Pour WAMP, mysqldump se trouve dans le dossier MySQL
+        const mysqldumpPath = 'C:\\wamp64\\bin\\mysql\\mysql9.1.0\\bin\\mysqldump.exe';
+        command = `"${mysqldumpPath}" -h ${database.host} -P ${database.port} -u ${database.username} ${database.password ? `-p${database.password}` : ''} ${database.databaseName} > "${filePath}"`;
         break;
       case 'POSTGRESQL':
         command = `pg_dump -h ${database.host} -p ${database.port} -U ${database.username} -d ${database.databaseName} -f "${filePath}"`;
@@ -178,7 +180,9 @@ export class BackupService {
 
     switch (database.type) {
       case 'MYSQL':
-        command = `mysql -h ${database.host} -P ${database.port} -u ${database.username} ${database.password ? `-p${database.password}` : ''} ${database.databaseName} < "${filePath}"`;
+        // Pour WAMP, mysql se trouve dans le dossier MySQL
+        const mysqlPath = 'C:\\wamp64\\bin\\mysql\\mysql9.1.0\\bin\\mysql.exe';
+        command = `"${mysqlPath}" -h ${database.host} -P ${database.port} -u ${database.username} ${database.password ? `-p${database.password}` : ''} ${database.databaseName} < "${filePath}"`;
         break;
       case 'POSTGRESQL':
         command = `psql -h ${database.host} -p ${database.port} -U ${database.username} -d ${database.databaseName} -f "${filePath}"`;

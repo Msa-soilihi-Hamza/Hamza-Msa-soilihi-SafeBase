@@ -18,7 +18,10 @@ export class BackupController {
       return c.json({
         success: true,
         message: 'Sauvegarde cr��e avec succ�s',
-        data: backup
+        data: {
+          ...backup,
+          fileSize: backup.fileSize.toString()
+        }
       });
     } catch (error) {
       console.error('Erreur cr�ation backup:', error);

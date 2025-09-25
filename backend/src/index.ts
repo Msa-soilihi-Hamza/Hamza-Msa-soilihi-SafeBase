@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { connectDatabase } from './config/database.js'
 import { backupRoutes } from './routes/backups.js'
+import { databaseRoutes } from './routes/databases.js'
 
 const app = new Hono()
 
@@ -16,6 +17,9 @@ app.get('/', (c) => {
 
 // Routes pour les sauvegardes
 app.route('/api/backups', backupRoutes)
+
+// Routes pour les bases de données
+app.route('/api/databases', databaseRoutes)
 
 // Route de health check
 app.get('/health', (c) => {
@@ -40,10 +44,14 @@ async function startServer() {
       console.log('📋 Endpoints disponibles:')
       console.log('  GET  / - Informations API')
       console.log('  GET  /health - État de santé')
-      console.log('  POST /api/backups/create - Créer une sauvegarde')
-      console.log('  GET  /api/backups/database/:id/versions - Versions d\'une base')
-      console.log('  POST /api/backups/:id/restore - Restaurer une sauvegarde')
-      console.log('  DELETE /api/backups/:id - Supprimer une sauvegarde')
+      console.log('  📊 DATABASES:')
+      console.log('    POST /api/databases/create - Créer une base')
+      console.log('    GET  /api/databases/all - Lister les bases')
+      console.log('    GET  /api/databases/:id - Détails d\'une base')
+      console.log('  💾 BACKUPS:')
+      console.log('    GET  /api/backups/create - Créer une sauvegarde')
+      console.log('    GET  /api/backups/database/:id/versions - Versions d\'une base')
+      console.log('    POST /api/backups/:id/restore - Restaurer une sauvegarde')
     })
   } catch (error) {
     console.error('❌ Erreur lors du démarrage:', error)
