@@ -7,7 +7,7 @@ export class BackupController {
     try {
       // Pour GET, on récupère les paramètres depuis query ou on utilise des valeurs par défaut
       const databaseId = c.req.query('databaseId') || 'test-database-id';
-      const backupType = c.req.query('backupType') || 'MANUAL';
+      const backupType = (c.req.query('backupType') || 'MANUAL') as 'MANUAL' | 'SCHEDULED' | 'AUTOMATIC';
 
       if (!databaseId) {
         return c.json({ error: 'Database ID requis' }, 400);
@@ -41,18 +41,18 @@ export class BackupController {
 
       return c.json({
         success: true,
-        data: versions.map(backup => ({
+        data: versions.map((backup: any) => ({
           id: backup.id,
           version: backup.version,
           status: backup.status,
           backupType: backup.backupType,
           fileSize: backup.fileSize.toString(),
           startedAt: backup.startedAt,
-          completedAt: backup.completedAt,
+          completedAt: backup.completedAt || null,
           compressed: backup.compressed,
-          checksum: backup.checksum,
+          checksum: backup.checksum || null,
           database: backup.database,
-          errorMessage: backup.errorMessage
+          errorMessage: backup.errorMessage || null
         }))
       });
     } catch (error) {
@@ -143,7 +143,7 @@ export class BackupController {
       }
 
       const backup = await backupService.getBackupVersions('').then(backups =>
-        backups.find(b => b.id === backupId)
+        backups.find((b: any) => b.id === backupId)
       );
 
       if (!backup) {
@@ -185,21 +185,21 @@ export class BackupController {
       const allBackups = await backupService.getBackupVersions('');
 
       const filteredBackups = status
-        ? allBackups.filter(b => b.status === status)
+        ? allBackups.filter((b: any) => b.status === status)
         : allBackups;
 
       const paginatedBackups = filteredBackups.slice(skip, skip + limit);
 
       return c.json({
         success: true,
-        data: paginatedBackups.map(backup => ({
+        data: paginatedBackups.map((backup: any) => ({
           id: backup.id,
           version: backup.version,
           status: backup.status,
           backupType: backup.backupType,
           fileSize: backup.fileSize.toString(),
           startedAt: backup.startedAt,
-          completedAt: backup.completedAt,
+          completedAt: backup.completedAt || null,
           database: backup.database
         })),
         pagination: {
