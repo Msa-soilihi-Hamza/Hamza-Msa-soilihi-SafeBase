@@ -4,6 +4,7 @@ import { connectDatabase } from './config/database.js'
 import { backupRoutes } from './routes/backups.js'
 import { databaseRoutes } from './routes/databases.js'
 import { scheduleRoutes } from './routes/schedules.js'
+import { auth } from './routes/auth.js'
 import { cronService } from './config/cron.js'
 
 const app = new Hono()
@@ -16,6 +17,9 @@ app.get('/', (c) => {
     status: 'running'
   })
 })
+
+// Routes d'authentification
+app.route('/api/auth', auth)
 
 // Routes pour les sauvegardes
 app.route('/api/backups', backupRoutes)
@@ -47,12 +51,18 @@ async function startServer() {
 
     serve({
       fetch: app.fetch,
-      port: 3002
+      port: 3004
     }, (info) => {
       console.log(`🚀 SafeBase API démarré sur http://localhost:${info.port}`)
       console.log('📋 Endpoints disponibles:')
       console.log('  GET  / - Informations API')
       console.log('  GET  /health - État de santé')
+      console.log('  🔐 AUTHENTIFICATION:')
+      console.log('    POST /api/auth/register - Inscription')
+      console.log('    POST /api/auth/login - Connexion')
+      console.log('    POST /api/auth/logout - Déconnexion')
+      console.log('    GET  /api/auth/profile - Profil utilisateur')
+      console.log('    GET  /api/auth/me - Test authentification')
       console.log('  📊 DATABASES:')
       console.log('    POST /api/databases/create - Créer une base')
       console.log('    GET  /api/databases/all - Lister les bases')
