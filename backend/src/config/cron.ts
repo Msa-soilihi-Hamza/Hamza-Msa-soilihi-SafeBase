@@ -8,39 +8,32 @@ export class CronService {
   async startScheduledBackups() {
     console.log('=R Initialisation des sauvegardes automatiques...');
 
-    // Sauvegarde quotidienne à 2h du matin pour toutes les bases actives
+    // Sauvegarde quotidienne ï¿½ 2h du matin pour toutes les bases actives
     const dailyTask = cron.schedule('0 2 * * *', async () => {
       await this.runScheduledBackups('SCHEDULED');
-    }, {
-      scheduled: false,
-      timezone: 'Europe/Paris'
     });
 
     // Sauvegarde toutes les 6 heures pour les bases critiques
     const sixHourlyTask = cron.schedule('0 */6 * * *', async () => {
       await this.runScheduledBackups('AUTOMATIC');
-    }, {
-      scheduled: false,
-      timezone: 'Europe/Paris'
     });
 
     this.tasks.set('daily', dailyTask);
     this.tasks.set('sixHourly', sixHourlyTask);
 
-    // Démarrer les tâches
-    dailyTask.start();
-    sixHourlyTask.start();
+    // Dï¿½marrer les tï¿½ches
+    // Les tÃ¢ches sont automatiquement dÃ©marrÃ©es
 
-    console.log(' Sauvegardes automatiques configurées :');
+    console.log(' Sauvegardes automatiques configurï¿½es :');
     console.log('   - Quotidienne : 2h00 (toutes les bases)');
     console.log('   - 6h : toutes les 6h (bases critiques)');
   }
 
-  private async runScheduledBackups(backupType: 'SCHEDULED' | 'AUTOMATIC') {
+  private async runScheduledBackups(backupType: 'SCHEDULED' | 'AUTOMATIC' | 'MANUAL') {
     try {
-      console.log(`\n= Démarrage des sauvegardes ${backupType}...`);
+      console.log(`\n= Dï¿½marrage des sauvegardes ${backupType}...`);
 
-      // Récupérer toutes les bases actives
+      // Rï¿½cupï¿½rer toutes les bases actives
       const activeDatabases = await prisma.database.findMany({
         where: { isActive: true },
         include: {
@@ -49,11 +42,11 @@ export class CronService {
       });
 
       if (activeDatabases.length === 0) {
-        console.log('9  Aucune base de données active trouvée');
+        console.log('9  Aucune base de donnï¿½es active trouvï¿½e');
         return;
       }
 
-      console.log(`=Ê ${activeDatabases.length} base(s) de données à sauvegarder`);
+      console.log(`=ï¿½ ${activeDatabases.length} base(s) de donnï¿½es ï¿½ sauvegarder`);
 
       const results = [];
 
@@ -82,20 +75,20 @@ export class CronService {
         }
       }
 
-      // Résumé
+      // Rï¿½sumï¿½
       const successful = results.filter(r => r.success).length;
       const failed = results.filter(r => !r.success).length;
 
-      console.log(`\n=È Résumé des sauvegardes ${backupType}:`);
-      console.log(`    Réussies: ${successful}`);
-      console.log(`   L Échouées: ${failed}`);
-      console.log(`   =Å ${new Date().toLocaleString('fr-FR')}`);
+      console.log(`\n=ï¿½ Rï¿½sumï¿½ des sauvegardes ${backupType}:`);
+      console.log(`    Rï¿½ussies: ${successful}`);
+      console.log(`   L ï¿½chouï¿½es: ${failed}`);
+      console.log(`   =ï¿½ ${new Date().toLocaleString('fr-FR')}`);
 
-      // Log général
+      // Log gï¿½nï¿½ral
       await prisma.log.create({
         data: {
           level: failed > 0 ? 'WARNING' : 'INFO',
-          message: `Sauvegardes ${backupType}: ${successful} réussies, ${failed} échouées`,
+          message: `Sauvegardes ${backupType}: ${successful} rï¿½ussies, ${failed} ï¿½chouï¿½es`,
           action: `CRON_${backupType}`,
           metadata: {
             successful,
@@ -122,24 +115,21 @@ export class CronService {
 
   // Nettoyage automatique des anciennes sauvegardes
   async startCleanupSchedule() {
-    console.log('>ù Configuration du nettoyage automatique...');
+    console.log('>ï¿½ Configuration du nettoyage automatique...');
 
     const cleanupTask = cron.schedule('0 3 * * 0', async () => {
       await this.runScheduledCleanup();
-    }, {
-      scheduled: false,
-      timezone: 'Europe/Paris'
     });
 
     this.tasks.set('cleanup', cleanupTask);
-    cleanupTask.start();
+    // La tÃ¢che est automatiquement dÃ©marrÃ©e
 
-    console.log(' Nettoyage automatique configuré : Dimanche 3h00');
+    console.log(' Nettoyage automatique configurï¿½ : Dimanche 3h00');
   }
 
   private async runScheduledCleanup() {
     try {
-      console.log('\n>ù Démarrage du nettoyage automatique...');
+      console.log('\n>ï¿½ Dï¿½marrage du nettoyage automatique...');
 
       const activeDatabases = await prisma.database.findMany({
         where: { isActive: true }
@@ -151,18 +141,18 @@ export class CronService {
         try {
           const result = await backupService.cleanupOldBackups(database.id, 30);
           totalDeleted += result.deleted;
-          console.log(`  >ù ${database.name}: ${result.deleted} sauvegarde(s) supprimée(s)`);
+          console.log(`  >ï¿½ ${database.name}: ${result.deleted} sauvegarde(s) supprimï¿½e(s)`);
         } catch (error: any) {
           console.error(`  L Erreur nettoyage ${database.name}:`, error.message);
         }
       }
 
-      console.log(`\n>ù Nettoyage terminé: ${totalDeleted} sauvegarde(s) supprimée(s)`);
+      console.log(`\n>ï¿½ Nettoyage terminï¿½: ${totalDeleted} sauvegarde(s) supprimï¿½e(s)`);
 
       await prisma.log.create({
         data: {
           level: 'INFO',
-          message: `Nettoyage automatique: ${totalDeleted} sauvegarde(s) supprimée(s)`,
+          message: `Nettoyage automatique: ${totalDeleted} sauvegarde(s) supprimï¿½e(s)`,
           action: 'CRON_CLEANUP',
           metadata: { deleted: totalDeleted, databases: activeDatabases.length }
         }
@@ -173,28 +163,28 @@ export class CronService {
     }
   }
 
-  // Créer une sauvegarde manuelle immédiate pour toutes les bases
+  // Crï¿½er une sauvegarde manuelle immï¿½diate pour toutes les bases
   async createImmediateBackup() {
-    console.log('¡ Sauvegarde immédiate demandée...');
+    console.log('ï¿½ Sauvegarde immï¿½diate demandï¿½e...');
     await this.runScheduledBackups('MANUAL');
   }
 
-  // Arrêter toutes les tâches programmées
+  // Arrï¿½ter toutes les tï¿½ches programmï¿½es
   stopAllTasks() {
-    console.log('=Ñ Arrêt des tâches programmées...');
+    console.log('=ï¿½ Arrï¿½t des tï¿½ches programmï¿½es...');
     this.tasks.forEach((task, name) => {
       task.stop();
-      console.log(`   Tâche "${name}" arrêtée`);
+      console.log(`   Tï¿½che "${name}" arrï¿½tï¿½e`);
     });
     this.tasks.clear();
   }
 
-  // Obtenir le statut des tâches
+  // Obtenir le statut des tï¿½ches
   getTasksStatus() {
     const status: any = {};
     this.tasks.forEach((task, name) => {
       status[name] = {
-        running: task.running,
+        active: this.tasks.has(name),
         scheduled: true
       };
     });
