@@ -50,7 +50,9 @@ export const PASSWORD_CONFIG = {
   saltRounds: 12, // Nombre de rounds pour bcrypt
   minLength: 8,   // Longueur minimale
   requireNumbers: true,
-  requireSpecialChars: false
+  requireSpecialChars: true,
+  requireUppercase: true,
+  requireLowercase: true
 };
 
 // Validation du format email
@@ -63,8 +65,24 @@ export function isValidEmail(email: string): boolean {
 export function isValidPassword(password: string): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
+  // Vérifier si le mot de passe est vide ou ne contient que des espaces
+  if (!password || password.trim().length === 0) {
+    errors.push('Le mot de passe ne peut pas être vide');
+  }
+
+  // Vérifier la longueur minimale
   if (password.length < PASSWORD_CONFIG.minLength) {
-    errors.push(`Le mot de passe doit contenir au moins ${PASSWORD_CONFIG.minLength} caract�res`);
+    errors.push(`Le mot de passe doit contenir au moins ${PASSWORD_CONFIG.minLength} caractères`);
+  }
+
+  // Vérifier la présence d'au moins une majuscule
+  if (PASSWORD_CONFIG.requireUppercase && !/[A-Z]/.test(password)) {
+    errors.push('Le mot de passe doit contenir au moins une majuscule');
+  }
+
+  // Vérifier la présence d'au moins une minuscule
+  if (PASSWORD_CONFIG.requireLowercase && !/[a-z]/.test(password)) {
+    errors.push('Le mot de passe doit contenir au moins une minuscule');
   }
 
   if (PASSWORD_CONFIG.requireNumbers && !/\d/.test(password)) {
@@ -72,7 +90,7 @@ export function isValidPassword(password: string): { valid: boolean; errors: str
   }
 
   if (PASSWORD_CONFIG.requireSpecialChars && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-    errors.push('Le mot de passe doit contenir au moins un caract�re sp�cial');
+    errors.push('Le mot de passe doit contenir au moins un caractère spécial');
   }
 
   return {
