@@ -1,26 +1,27 @@
 import { Hono } from 'hono';
 import { cronService } from '../config/cron.js';
 import { scheduleController } from '../controllers/scheduleController.js';
+import { authenticateToken, requireAdmin } from '../middlewares/authMiddleware.js';
 
 const scheduleRoutes = new Hono();
 
 // Obtenir le statut des planifications
-scheduleRoutes.get('/status', (c) => scheduleController.getScheduleStatus(c));
+scheduleRoutes.get('/status', authenticateToken, (c) => scheduleController.getScheduleStatus(c));
 
 // Déclencher une sauvegarde immédiate
-scheduleRoutes.post('/backup-now', (c) => scheduleController.triggerImmediateBackup(c));
+scheduleRoutes.post('/backup-now', authenticateToken, (c) => scheduleController.triggerImmediateBackup(c));
 
 // Déclencher une sauvegarde planifiée
-scheduleRoutes.post('/backup-scheduled', (c) => scheduleController.triggerScheduledBackup(c));
+scheduleRoutes.post('/backup-scheduled', authenticateToken, (c) => scheduleController.triggerScheduledBackup(c));
 
 // Déclencher une sauvegarde automatique
-scheduleRoutes.post('/backup-automatic', (c) => scheduleController.runAutomaticBackup(c));
+scheduleRoutes.post('/backup-automatic', authenticateToken, (c) => scheduleController.runAutomaticBackup(c));
 
 // Déclencher le nettoyage
-scheduleRoutes.post('/cleanup', (c) => scheduleController.triggerCleanup(c));
+scheduleRoutes.post('/cleanup', authenticateToken, (c) => scheduleController.triggerCleanup(c));
 
 // Redémarrer les tâches programmées (admin)
-scheduleRoutes.post('/restart', async (c) => {
+scheduleRoutes.post('/restart', requireAdmin, async (c) => {
   try {
     cronService.stopAllTasks();
     await cronService.startScheduledBackups();
@@ -40,7 +41,7 @@ scheduleRoutes.post('/restart', async (c) => {
 });
 
 // Arrêter toutes les tâches programmées (admin)
-scheduleRoutes.post('/stop', (c) => {
+scheduleRoutes.post('/stop', requireAdmin, (c) => {
   try {
     cronService.stopAllTasks();
     return c.json({
@@ -57,7 +58,7 @@ scheduleRoutes.post('/stop', (c) => {
 });
 
 // Statut des tâches CRON
-scheduleRoutes.get('/cron-status', (c) => {
+scheduleRoutes.get('/cron-status', authenticateToken, (c) => {
   try {
     const status = cronService.getTasksStatus();
     return c.json({

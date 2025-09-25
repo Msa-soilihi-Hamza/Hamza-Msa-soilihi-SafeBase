@@ -1,24 +1,25 @@
 import { Hono } from 'hono';
 import { databaseController } from '../controllers/databaseController.js';
+import { authenticateToken } from '../middlewares/authMiddleware.js';
 
 const databaseRoutes = new Hono();
 
-// Créer une nouvelle base de données
-databaseRoutes.post('/create', (c) => databaseController.createDatabase(c));
+// Crï¿½er une nouvelle base de donnï¿½es
+databaseRoutes.post('/create', authenticateToken, (c) => databaseController.createDatabase(c));
 
-// Récupérer toutes les bases de données
-databaseRoutes.get('/all', (c) => databaseController.getAllDatabases(c));
+// Rï¿½cupï¿½rer toutes les bases de donnï¿½es
+databaseRoutes.get('/all', authenticateToken, (c) => databaseController.getAllDatabases(c));
 
-// Récupérer une base de données spécifique
-databaseRoutes.get('/:id', (c) => databaseController.getDatabase(c));
+// Rï¿½cupï¿½rer une base de donnï¿½es spï¿½cifique
+databaseRoutes.get('/:id', authenticateToken, (c) => databaseController.getDatabase(c));
 
-// Mettre à jour une base de données
-databaseRoutes.put('/:id', (c) => databaseController.updateDatabase(c));
+// Mettre ï¿½ jour une base de donnï¿½es
+databaseRoutes.put('/:id', authenticateToken, (c) => databaseController.updateDatabase(c));
 
-// Supprimer une base de données
-databaseRoutes.delete('/:id', (c) => databaseController.deleteDatabase(c));
+// Supprimer une base de donnï¿½es
+databaseRoutes.delete('/:id', authenticateToken, (c) => databaseController.deleteDatabase(c));
 
-// Tester la connexion à une base de données
-databaseRoutes.post('/:id/test-connection', (c) => databaseController.testConnection(c));
+// Tester la connexion ï¿½ une base de donnï¿½es
+databaseRoutes.post('/:id/test-connection', authenticateToken, (c) => databaseController.testConnection(c));
 
 export { databaseRoutes };
